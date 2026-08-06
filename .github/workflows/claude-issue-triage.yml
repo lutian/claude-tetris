@@ -3,21 +3,29 @@ name: Claude Issue Triage
 on:
   issues:
     types: [opened, edited]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Número da issue a triar"
+        required: true
+        type: string
 
 # An edit while a previous triage run is still going cancels it instead of stacking runs.
 concurrency:
-  group: issue-triage-${{ github.event.issue.number }}
+  group: issue-triage-${{ github.event.issue.number || inputs.issue_number }}
   cancel-in-progress: true
 
 jobs:
   triage:
     # Avoid re-triggering off edits Claude itself might make elsewhere, or other bots.
-    if: github.event.sender.type != 'Bot'
+    if: github.event_name == 'workflow_dispatch' || github.event.sender.type != 'Bot'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       issues: write
       id-token: write
+    env:
+      ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,7 +40,7 @@ jobs:
           claude_args: |
             --allowed-tools "Read,Grep,Glob,Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh api:*),Bash(mktemp:*)"
           prompt: |
-            Você está fazendo a triagem automática da issue #${{ github.event.issue.number }}
+            Você está fazendo a triagem automática da issue #${{ env.ISSUE_NUMBER }}
             do repositório ${{ github.repository }} (Tetris em JS puro / Canvas, sem build).
 
             Leia primeiro o CLAUDE.md na raiz do repo para entender a arquitetura de game.js
@@ -43,7 +51,7 @@ jobs:
 
             Passos:
 
-            1. Rode `gh issue view ${{ github.event.issue.number }} --json title,body,labels,comments`
+            1. Rode `gh issue view ${{ env.ISSUE_NUMBER }} --json title,body,labels,comments`
                para ler o conteúdo atual da issue.
 
             2. Investigue o código relevante (game.js, index.html, style.css) com Read/Grep para
@@ -59,7 +67,7 @@ jobs:
                - wontfix: peça algo que contraria decisões de design do projeto
                - good first issue: mudança pequena e isolada, fácil pra começar
                - help wanted: precisa de contexto externo ou decisão do mantenedor
-               Aplique com `gh issue edit ${{ github.event.issue.number }} --add-label "nome1" --add-label "nome2"`.
+               Aplique com `gh issue edit ${{ env.ISSUE_NUMBER }} --add-label "nome1" --add-label "nome2"`.
                Não remova labels que já existam e façam sentido; não adicione labels fora da lista.
 
             4. Escreva um diagnóstico em markdown com exatamente estas seções:
@@ -82,12 +90,12 @@ jobs:
                a. Escreva o corpo final num arquivo temporário (via `mktemp`), começando a
                   primeira linha com o marcador literal `<!-- claude-triage -->`.
                b. Rode:
-                  `gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments --jq '.[] | select(.body | startswith("<!-- claude-triage -->")) | .id'`
+                  `gh api repos/${{ github.repository }}/issues/${{ env.ISSUE_NUMBER }}/comments --jq '.[] | select(.body | startswith("<!-- claude-triage -->")) | .id'`
                   para achar um comentário anterior do bot.
                c. Se encontrou um id, atualize-o com:
                   `gh api -X PATCH repos/${{ github.repository }}/issues/comments/<id> -f body=@<arquivo>`
                d. Se não encontrou nenhum, crie um novo com:
-                  `gh api -X POST repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments -f body=@<arquivo>`
+                  `gh api -X POST repos/${{ github.repository }}/issues/${{ env.ISSUE_NUMBER }}/comments -f body=@<arquivo>`
 
             Regras importantes:
             - NÃO edite o título nem o corpo da issue (isso disparia o evento "edited" de novo).
