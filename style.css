@@ -70,6 +70,24 @@ body {
   border-radius: 4px;
 }
 
+/* ---- Selector de skin ---- */
+.skin-select {
+  background: #22223a;
+  border: 1px solid #3a3a5a;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.skin-select:hover,
+.skin-select:focus {
+  border-color: #7aa2f7;
+  outline: none;
+}
+
 /* ---- Controles ---- */
 .controls ul {
   list-style: none;

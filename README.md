@@ -47,6 +47,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
 - **Tabla de récords local**: guarda el Top 5 de puntuaciones (con nombre de jugador) en `localStorage`, visible en la pantalla de inicio y en el overlay de Game Over.
+- **Temas visuales / skins**: selector con cuatro estilos (Retro, Neon, Pastel, Pixel art) que cambia colores y forma de dibujar los bloques al vuelo, sin recargar la página. La preferencia se guarda en `localStorage`.
 
 ---
 
@@ -126,7 +127,7 @@ El juego se compone de tres archivos que cooperan:
 Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
-- Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
+- Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza, un `<select id="skin-select">` para elegir el tema visual y la lista de controles.
 - Un overlay para los estados **PAUSA** (menú completo con reanudar, reiniciar, ver controles y nivel inicial) y **GAME OVER** (que añade el formulario de nombre, si la puntuación entra en el Top 5, y la tabla de récords).
 - Un overlay de **pantalla de inicio** (`#start-overlay`), visible al cargar la página, con la tabla de récords y el botón "Jugar" que arranca la partida.
 
@@ -148,6 +149,7 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
 - **Récords** (`loadHighScores` / `addHighScore` / `renderHighScores`): el Top 5 se guarda como JSON en `localStorage` bajo la clave `HIGH_SCORES_KEY`; cada entrada tiene `{ id, name, score, lines, combo }`. `qualifiesForHighScore` decide si la puntuación actual merece pedir el nombre del jugador.
+- **Temas visuales** (`THEMES`, `currentSkin`): cada tema define una paleta de colores (`colors`), un color de fondo del canvas (`background`) y un color de grilla (`gridColor`). El dibujo de cada bloque delega en una función por tema (`drawBlockRetro`, `drawBlockNeon`, `drawBlockPastel`, `drawBlockPixel`) seleccionada vía `SKIN_DRAWERS[currentSkin]`. El `<select id="skin-select">` cambia `currentSkin`, lo persiste en `localStorage` y fuerza un redibujado inmediato (`draw()` + `drawNext()`) mientras la partida está en curso, sin recargar la página ni afectar el estado de la partida.
 
 ### Flujo del juego
 
@@ -213,6 +215,7 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `NUT_CHANCE`   | Probabilidad de que salga la pieza "tuerca" | `0.08`             |
 | `HIGH_SCORES_KEY` | Clave de `localStorage` para los récords | `'tetris-highscores'` |
 | `MAX_HIGH_SCORES` | Cantidad de puntuaciones guardadas en el Top | `5`                |
+| `THEMES`       | Paletas y renderizadores por tema visual (Retro/Neon/Pastel/Pixel art) | 4 temas |
 
 > Si cambias `COLS`, `ROWS` o `BLOCK`, recuerda ajustar también `width` y `height` del `<canvas id="board">` en `index.html` para que coincida (`COLS × BLOCK` × `ROWS × BLOCK`).
 
