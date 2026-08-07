@@ -3,51 +3,103 @@ name: Claude Issue Triage
 on:
   issues:
     types: [opened, edited]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Número da issue a triar"
+        required: true
+        type: string
+
+# An edit while a previous triage run is still going cancels it instead of stacking runs.
+concurrency:
+  group: issue-triage-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: true
 
 jobs:
-  format-issue:
+  triage:
+    # Avoid re-triggering off edits Claude itself might make elsewhere, or other bots.
+    if: github.event_name == 'workflow_dispatch' || github.event.sender.type != 'Bot'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       issues: write
       id-token: write
+    env:
+      ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Format issue with Claude
+      - name: Run Claude Issue Triage
+        id: claude-triage
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: "--allowedTools Bash(gh issue *)"
+          claude_args: |
+            "--allowed-tools Read,Grep,Glob,Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh api:*),Bash(mktemp:*)"
           prompt: |
-            You are a GitHub issue formatter for a Tetris game project (vanilla JS/HTML/CSS, no dependencies).
-            An issue was just ${{ github.event.action }} with the following details:
-            - Issue number: #${{ github.event.issue.number }}
-            - Title: ${{ github.event.issue.title }}
-            - Body: ${{ github.event.issue.body }}
-            - Author: ${{ github.event.issue.user.login }}
-            Your tasks:
-            1. **Add labels** based on the issue content. Use only these labels:
-               - `bug` — something is broken or behaving incorrectly
-               - `enhancement` — new feature or improvement request
-               - `question` — asking for help or clarification
-               - `documentation` — docs need updating
-               - `good first issue` — simple, beginner-friendly task
-               - `duplicate` — if it seems like a known/repeated problem
-            2. **Post a comment** on the issue that includes:
-               - A brief, friendly summary of what the issue is about (1-2 sentences)
-               - A "Formatted Report" section with:
-                 - **Type**: Bug / Feature Request / Question / Other
-                 - **Summary**: one clear sentence describing the problem or request
-                 - **Steps to reproduce** (for bugs): list them if not provided, ask the user to provide them if it's a bug
-                 - **Expected behavior** (for bugs): what should happen
-                 - **Suggested labels**: the labels you applied and why
-               - A closing note thanking the contributor
-               - Write the entire comment body in GitHub-flavored Markdown (headings, bold, lists, code blocks, etc.) so GitHub renders it properly
-            Use the `gh` CLI to apply labels and post the comment. Example commands:
-              gh issue edit ${{ github.event.issue.number }} --add-label "bug" --repo ${{ github.repository }}
-              gh issue comment ${{ github.event.issue.number }} --body "..." --repo ${{ github.repository }}
-            Be concise, helpful, and friendly. Do not over-engineer the response.
+            Você está fazendo a triagem automática da issue #${{ env.ISSUE_NUMBER }}
+            do repositório ${{ github.repository }} (Tetris em JS puro / Canvas, sem build).
+
+            Leia primeiro o CLAUDE.md na raiz do repo para entender a arquitetura de game.js
+            (board, peças, colisão, wall kicks, game loop, locking/clearing, ghost piece,
+            scoring/leveling, estado global módulo-level). Leia também README.md (em espanhol,
+            é a fonte de verdade de gameplay/features) quando a issue tocar em comportamento
+            documentado ali.
+
+            Passos:
+
+            1. Rode `gh issue view ${{ env.ISSUE_NUMBER }} --json title,body,labels,comments`
+               para ler o conteúdo atual da issue.
+
+            2. Investigue o código relevante (game.js, index.html, style.css) com Read/Grep para
+               identificar exatamente quais funções, constantes ou trechos estão envolvidos.
+
+            3. Escolha de 1 a 3 labels **apenas** desta lista fixa, sem criar labels novos:
+               - bug: comportamento quebrado do jogo
+               - enhancement: funcionalidade nova ou melhoria
+               - documentation: afeta README.md ou CLAUDE.md
+               - question: pedido de esclarecimento, não uma ação clara
+               - duplicate: já existe outra issue igual (se detectável pelo título/corpo)
+               - invalid: não faz sentido, não reproduzível, ou fora do escopo do projeto
+               - wontfix: peça algo que contraria decisões de design do projeto
+               - good first issue: mudança pequena e isolada, fácil pra começar
+               - help wanted: precisa de contexto externo ou decisão do mantenedor
+               Aplique com `gh issue edit ${{ env.ISSUE_NUMBER }} --add-label "nome1" --add-label "nome2"`.
+               Não remova labels que já existam e façam sentido; não adicione labels fora da lista.
+
+            4. Escreva um diagnóstico em markdown com exatamente estas seções:
+               ## Resumo
+               (o problema ou pedido em 1-2 frases)
+               ## Labels aplicados
+               (quais e por quê, uma linha cada)
+               ## Análise técnica
+               (arquivos/funções/constantes envolvidos, citando arquivo:linha quando possível)
+               ## Plano de implementação
+               (passos numerados e concretos para resolver, prontos para servir de base a um PR)
+               ## Riscos / pontos de atenção
+               (ex.: consistência entre COLS/ROWS/BLOCK e o tamanho do <canvas id="board">,
+               estado global sem encapsulamento em game.js, necessidade de atualizar README.md)
+               ## Verificação manual
+               (como testar manualmente; não há testes automatizados neste repo — ex. `python3 -m http.server 8000`)
+
+            5. Publique esse diagnóstico como **um único comentário fixo e idempotente**, nunca
+               duplicado, seguindo este procedimento:
+               a. Escreva o corpo final num arquivo temporário (via `mktemp`), começando a
+                  primeira linha com o marcador literal `<!-- claude-triage -->`.
+               b. Rode:
+                  `gh api repos/${{ github.repository }}/issues/${{ env.ISSUE_NUMBER }}/comments --jq '.[] | select(.body | startswith("<!-- claude-triage -->")) | .id'`
+                  para achar um comentário anterior do bot.
+               c. Se encontrou um id, atualize-o com:
+                  `gh api -X PATCH repos/${{ github.repository }}/issues/comments/<id> -f body=@<arquivo>`
+               d. Se não encontrou nenhum, crie um novo com:
+                  `gh api -X POST repos/${{ github.repository }}/issues/${{ env.ISSUE_NUMBER }}/comments -f body=@<arquivo>`
+
+            Regras importantes:
+            - NÃO edite o título nem o corpo da issue (isso disparia o evento "edited" de novo).
+            - NÃO abra pull requests nem faça alterações de código — esta etapa é só triagem e
+              diagnóstico, a implementação vem depois.
+            - Se a issue não tiver informação suficiente para um diagnóstico técnico, deixe isso
+              claro no ## Resumo e aplique label "question" em vez de inventar uma causa.
