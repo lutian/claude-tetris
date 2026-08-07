@@ -120,11 +120,17 @@ kbd {
   align-items: center;
 }
 
-#overlay-title {
+#overlay-title,
+.overlay-title {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 4px;
   color: #e57373;
+}
+
+.overlay-title {
+  color: #7aa2f7;
+  margin-bottom: 4px;
 }
 
 #overlay-score {
@@ -133,7 +139,15 @@ kbd {
   color: #7aa2f7;
 }
 
-#restart-btn {
+#gameover-content,
+#pause-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.menu-btn {
   margin-top: 8px;
   background: #7aa2f7;
   color: #0f0f17;
@@ -147,6 +161,66 @@ kbd {
   transition: background 0.15s;
 }
 
-#restart-btn:hover {
+.menu-btn:hover {
   background: #9bbdff;
+}
+
+/* ---- Menú de pausa ---- */
+.pause-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 200px;
+}
+
+.pause-panel.hidden {
+  display: none;
+}
+
+.pause-panel .menu-btn {
+  margin-top: 0;
+  width: 100%;
+}
+
+.level-select {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 10px;
+}
+
+.level-select label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #888;
+}
+
+.level-select select {
+  background: #22223a;
+  border: 1px solid #3a3a5a;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.controls-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.controls-list li {
+  font-size: 12px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }

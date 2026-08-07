@@ -87,7 +87,18 @@ Después abre `http://localhost:8000` en el navegador.
 | `↑` o `X` | Rotar la pieza en sentido horario |
 | `↓`       | Soft drop (bajar más rápido)      |
 | `Espacio` | Hard drop (caída instantánea)     |
-| `P`       | Pausar / reanudar                 |
+| `P` / `Esc` | Pausar / reanudar               |
+
+---
+
+## Menú de pausa
+
+Al pausar (`P` o `Esc`) se abre un menú con varias opciones, y todos los controles del juego quedan bloqueados hasta cerrarlo (para evitar movimientos accidentales al volver):
+
+- **Reanudar** — cierra el menú y continúa la partida donde estaba.
+- **Reiniciar** — empieza una partida nueva sin recargar la página.
+- **Ver controles** — muestra dentro del propio menú la lista de teclas (con un botón **Volver** para regresar a las opciones).
+- **Nivel inicial** — selector (1–10) para elegir con qué nivel empezará la **próxima** partida (al pulsar "Reiniciar" o tras un Game Over).
 
 ---
 
@@ -101,7 +112,7 @@ Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
 - Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
-- Un overlay para los estados **PAUSA** y **GAME OVER**.
+- Un overlay para los estados **PAUSA** (menú completo con reanudar, reiniciar, ver controles y nivel inicial) y **GAME OVER**.
 
 ### 2. `style.css`
 
