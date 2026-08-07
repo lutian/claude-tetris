@@ -1,4 +1,6 @@
-# Tetris
+# Tetris - Teste de Integração com Claude Code para editar código
+
+## Utilizando @claude para chamar o claude code e solicitar que analise e atualize o código a partir de uma Issue
 
 Implementación del clásico **Tetris** en JavaScript vanilla, usando HTML5 Canvas y CSS. Sin dependencias externas, sin frameworks, sin proceso de build: solo abrir y jugar.
 
