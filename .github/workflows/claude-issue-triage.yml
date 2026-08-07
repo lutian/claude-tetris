@@ -38,7 +38,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: |
-            "--allowed-tools Read,Grep,Glob,Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh api:*),Bash(mktemp:*)"
+            --allowed-tools "Read,Grep,Glob,Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh api:*),Bash(mktemp:*)"
           prompt: |
             Você está fazendo a triagem automática da issue #${{ env.ISSUE_NUMBER }}
             do repositório ${{ github.repository }} (Tetris em JS puro / Canvas, sem build).
