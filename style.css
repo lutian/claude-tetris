@@ -150,3 +150,142 @@ kbd {
 #restart-btn:hover {
   background: #9bbdff;
 }
+
+.reset-btn {
+  background: transparent;
+  color: #666680;
+  border: 1px solid #33334a;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.reset-btn:hover {
+  color: #e57373;
+  border-color: #e57373;
+}
+
+.game-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: #7aa2f7;
+}
+
+/* ---- Tabla de récords ---- */
+.highscores {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 220px;
+}
+
+.highscores-list {
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.highscore-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: #ccc;
+}
+
+.highscore-entry.highlight {
+  background: rgba(122, 162, 247, 0.18);
+  color: #7aa2f7;
+  font-weight: 700;
+}
+
+.hs-rank {
+  color: #555570;
+  width: 16px;
+}
+
+.hs-name {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hs-score {
+  text-align: right;
+}
+
+.highscore-empty {
+  font-size: 12px;
+  color: #555570;
+  list-style: none;
+  padding: 4px 0;
+}
+
+.highscores-stats {
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.5px;
+}
+
+/* ---- Formulario de nombre (nuevo récord) ---- */
+.name-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.name-entry.hidden {
+  display: none;
+}
+
+.highscore-msg {
+  font-size: 13px;
+  color: #ffd54f;
+  font-weight: 700;
+}
+
+#player-name-input {
+  background: #1a1a25;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  color: #e0e0e0;
+  padding: 8px 10px;
+  font-size: 14px;
+  text-align: center;
+  width: 160px;
+}
+
+#player-name-input:focus {
+  outline: none;
+  border-color: #7aa2f7;
+}
+
+#save-score-btn {
+  background: #81c784;
+  color: #0f0f17;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+
+#save-score-btn:hover {
+  background: #a5d6a7;
+}
