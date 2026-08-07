@@ -30,6 +30,16 @@
           <canvas id="next-canvas" width="120" height="120"></canvas>
         </div>
 
+        <div class="panel-section">
+          <span class="label">SKIN</span>
+          <select id="skin-select" class="skin-select">
+            <option value="retro">Retro</option>
+            <option value="neon">Neon</option>
+            <option value="pastel">Pastel</option>
+            <option value="pixel">Pixel art</option>
+          </select>
+        </div>
+
         <div class="panel-section controls">
           <span class="label">CONTROLS</span>
           <ul>
@@ -37,7 +47,7 @@
             <li><kbd>↑</kbd> rotar</li>
             <li><kbd>↓</kbd> bajar</li>
             <li><kbd>Space</kbd> caída</li>
-            <li><kbd>P</kbd> pausa</li>
+            <li><kbd>P</kbd> / <kbd>Esc</kbd> pausa</li>
           </ul>
         </div>
       </aside>
@@ -45,9 +55,66 @@
 
     <div id="overlay" class="overlay hidden">
       <div class="overlay-box">
-        <p id="overlay-title">GAME OVER</p>
-        <p id="overlay-score"></p>
-        <button id="restart-btn">Reiniciar</button>
+        <div id="gameover-content" class="hidden">
+          <p id="overlay-title">GAME OVER</p>
+          <p id="overlay-score"></p>
+
+          <div id="name-entry" class="name-entry hidden">
+            <p class="highscore-msg">¡Nueva puntuación en el TOP 5!</p>
+            <input id="player-name-input" type="text" maxlength="12" placeholder="Tu nombre" autocomplete="off" />
+            <button id="save-score-btn">Guardar</button>
+          </div>
+
+          <div class="highscores">
+            <span class="label">TOP 5</span>
+            <ol id="highscores-list-end" class="highscores-list"></ol>
+            <p id="highscores-stats-end" class="highscores-stats"></p>
+          </div>
+
+          <button id="restart-btn" class="menu-btn">Reiniciar</button>
+          <button id="reset-scores-end-btn" class="reset-btn">Resetear récords</button>
+        </div>
+
+        <div id="pause-content" class="hidden">
+          <p class="overlay-title">PAUSA</p>
+
+          <div id="pause-main" class="pause-panel">
+            <button id="resume-btn" class="menu-btn">Reanudar</button>
+            <button id="pause-restart-btn" class="menu-btn">Reiniciar</button>
+            <button id="controls-toggle-btn" class="menu-btn">Ver controles</button>
+
+            <div class="level-select">
+              <label for="start-level-select">Nivel inicial</label>
+              <select id="start-level-select"></select>
+            </div>
+          </div>
+
+          <div id="controls-panel" class="pause-panel hidden">
+            <ul class="controls-list">
+              <li><kbd>←</kbd><kbd>→</kbd> mover</li>
+              <li><kbd>↑</kbd> rotar</li>
+              <li><kbd>↓</kbd> bajar</li>
+              <li><kbd>Space</kbd> caída</li>
+              <li><kbd>P</kbd> / <kbd>Esc</kbd> pausa</li>
+            </ul>
+            <button id="controls-back-btn" class="menu-btn">Volver</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="start-overlay" class="overlay">
+      <div class="overlay-box">
+        <p class="game-title">TETRIS</p>
+
+        <div class="highscores">
+          <span class="label">TOP 5</span>
+          <ol id="highscores-list-start" class="highscores-list"></ol>
+          <p id="highscores-stats-start" class="highscores-stats"></p>
+        </div>
+
+        <button id="play-btn">Jugar</button>
+        <button id="reset-scores-start-btn" class="reset-btn">Resetear récords</button>
       </div>
     </div>
   </div>
