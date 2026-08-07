@@ -56,9 +56,21 @@ const highscoresListEnd = document.getElementById('highscores-list-end');
 const highscoresStatsEnd = document.getElementById('highscores-stats-end');
 const resetScoresStartBtn = document.getElementById('reset-scores-start-btn');
 const resetScoresEndBtn = document.getElementById('reset-scores-end-btn');
+const gameoverContent = document.getElementById('gameover-content');
+const pauseContent = document.getElementById('pause-content');
+const pauseMain = document.getElementById('pause-main');
+const controlsPanel = document.getElementById('controls-panel');
+const resumeBtn = document.getElementById('resume-btn');
+const pauseRestartBtn = document.getElementById('pause-restart-btn');
+const controlsToggleBtn = document.getElementById('controls-toggle-btn');
+const controlsBackBtn = document.getElementById('controls-back-btn');
+const startLevelSelect = document.getElementById('start-level-select');
+
+const MAX_START_LEVEL = 10;
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let started = false;
+let startLevel = 1;
 let combo = 0;
 let maxCombo = 0;
 let pendingScore = null;
@@ -325,6 +337,8 @@ function endGame() {
   cancelAnimationFrame(animId);
   overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
+  pauseContent.classList.add('hidden');
+  gameoverContent.classList.remove('hidden');
   overlay.classList.remove('hidden');
 
   if (qualifiesForHighScore(score)) {
@@ -340,17 +354,25 @@ function endGame() {
   }
 }
 
+function showPauseMenu() {
+  controlsPanel.classList.add('hidden');
+  pauseMain.classList.remove('hidden');
+  startLevelSelect.value = String(startLevel);
+  gameoverContent.classList.add('hidden');
+  pauseContent.classList.remove('hidden');
+  overlay.classList.remove('hidden');
+}
+
 function togglePause() {
   if (!started || gameOver) return;
   paused = !paused;
   if (!paused) {
+    overlay.classList.add('hidden');
     lastTime = performance.now();
     loop(lastTime);
   } else {
     cancelAnimationFrame(animId);
-    overlayTitle.textContent = 'PAUSA';
-    overlayScore.textContent = '';
-    overlay.classList.remove('hidden');
+    showPauseMenu();
   }
 }
 
@@ -370,17 +392,27 @@ function loop(ts) {
   animId = requestAnimationFrame(loop);
 }
 
+function populateLevelSelect() {
+  for (let i = 1; i <= MAX_START_LEVEL; i++) {
+    const option = document.createElement('option');
+    option.value = String(i);
+    option.textContent = i;
+    startLevelSelect.appendChild(option);
+  }
+  startLevelSelect.value = String(startLevel);
+}
+
 function init() {
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  level = startLevel;
   paused = false;
   gameOver = false;
   combo = 0;
   maxCombo = 0;
   pendingScore = null;
-  dropInterval = 1000;
+  dropInterval = Math.max(100, 1000 - (level - 1) * 90);
   dropAccum = 0;
   lastTime = performance.now();
   next = randomPiece();
@@ -388,13 +420,15 @@ function init() {
   updateHUD();
   overlay.classList.add('hidden');
   nameEntry.classList.add('hidden');
+  gameoverContent.classList.add('hidden');
+  pauseContent.classList.add('hidden');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
 
 document.addEventListener('keydown', e => {
   if (!started) return;
-  if (e.code === 'KeyP') { togglePause(); return; }
+  if (e.code === 'KeyP' || e.code === 'Escape') { togglePause(); return; }
   if (paused || gameOver) return;
   switch (e.code) {
     case 'ArrowLeft':
@@ -419,6 +453,19 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+resumeBtn.addEventListener('click', togglePause);
+pauseRestartBtn.addEventListener('click', init);
+controlsToggleBtn.addEventListener('click', () => {
+  pauseMain.classList.add('hidden');
+  controlsPanel.classList.remove('hidden');
+});
+controlsBackBtn.addEventListener('click', () => {
+  controlsPanel.classList.add('hidden');
+  pauseMain.classList.remove('hidden');
+});
+startLevelSelect.addEventListener('change', () => {
+  startLevel = Number(startLevelSelect.value);
+});
 
 playBtn.addEventListener('click', () => {
   started = true;
@@ -434,4 +481,5 @@ playerNameInput.addEventListener('keydown', e => {
 resetScoresStartBtn.addEventListener('click', resetHighScores);
 resetScoresEndBtn.addEventListener('click', resetHighScores);
 
+populateLevelSelect();
 renderAllHighScores();
