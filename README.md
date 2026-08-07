@@ -45,6 +45,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
+- **Temas visuales / skins**: selector con cuatro estilos (Retro, Neon, Pastel, Pixel art) que cambia colores y forma de dibujar los bloques al vuelo, sin recargar la página. La preferencia se guarda en `localStorage`.
 
 ---
 
@@ -100,7 +101,7 @@ El juego se compone de tres archivos que cooperan:
 Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
-- Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
+- Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza, un `<select id="skin-select">` para elegir el tema visual y la lista de controles.
 - Un overlay para los estados **PAUSA** y **GAME OVER**.
 
 ### 2. `style.css`
@@ -120,6 +121,7 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
 - **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
+- **Temas visuales** (`THEMES`, `currentSkin`): cada tema define una paleta de colores (`colors`), un color de fondo del canvas (`background`) y un color de grilla (`gridColor`). El dibujo de cada bloque delega en una función por tema (`drawBlockRetro`, `drawBlockNeon`, `drawBlockPastel`, `drawBlockPixel`) seleccionada vía `SKIN_DRAWERS[currentSkin]`. El `<select id="skin-select">` cambia `currentSkin`, lo persiste en `localStorage` y fuerza un redibujado inmediato (`draw()` + `drawNext()`), sin recargar la página ni afectar el estado de la partida.
 
 ### Flujo del juego
 
@@ -180,6 +182,7 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
 | `NUT_CHANCE`   | Probabilidad de que salga la pieza "tuerca" | `0.08`             |
+| `THEMES`       | Paletas y renderizadores por tema visual (Retro/Neon/Pastel/Pixel art) | 4 temas |
 
 > Si cambias `COLS`, `ROWS` o `BLOCK`, recuerda ajustar también `width` y `height` del `<canvas id="board">` en `index.html` para que coincida (`COLS × BLOCK` × `ROWS × BLOCK`).
 
